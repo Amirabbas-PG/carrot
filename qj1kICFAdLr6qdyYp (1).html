@@ -1,0 +1,397 @@
+<html><head><base href=".">
+  <style>
+    body { margin: 0; overflow: hidden; background: #90EE90; }
+    
+    .rabbit {
+      width: min(80px, 15vw);
+      height: min(60px, 12vw);
+      position: absolute;
+      transition: all 0.2s;
+      cursor: pointer;
+      transform-origin: center;
+      display: none; /* Initially hidden until game starts */
+    }
+    
+    .carrot {
+      width: min(30px, 8vw);
+      height: min(30px, 8vw);
+      position: absolute;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .timer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-family: Arial;
+      font-size: min(24px, 5vw);
+      font-weight: bold;
+      display: none; /* Initially hidden */
+    }
+
+    .score {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-family: Arial;
+      font-size: min(24px, 5vw);
+      font-weight: bold;
+      display: none; /* Initially hidden */
+    }
+
+    .button {
+      padding: min(15px, 3vw) min(30px, 6vw);
+      font-size: min(20px, 5vw);
+      background: #FFB6C1;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1001;
+    }
+
+    .pause-btn {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none; /* Initially hidden */
+    }
+
+    .replay-btn, .continue-btn {
+      position: fixed;
+      top: 60%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    .back-menu-btn {
+      position: fixed;
+      top: 70%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+
+    .start-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 5vh;
+    }
+
+    .game-title {
+      color: white;
+      font-family: Arial;
+      font-size: min(40px, 8vw);
+      margin-bottom: 5vh;
+    }
+
+    .rabbit-selection {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 5vh;
+    }
+
+    .rabbit-option {
+      width: min(120px, 25vw);
+      height: min(90px, 20vw);
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .rabbit-option:hover {
+      transform: scale(1.1);
+    }
+
+    .rabbit-option.selected {
+      outline: 4px solid #FFB6C1;
+      border-radius: 10px;
+    }
+
+    .start-game-btn {
+      margin-top: 20px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: none;
+      z-index: 1000;
+    }
+
+    .message {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: Arial;
+      font-size: min(30px, 6vw);
+      text-align: center;
+      color: white;
+      display: none;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+  <div class="start-screen" id="startScreen">
+    <h1 class="game-title">Carrot Eating Game</h1>
+    <div class="rabbit-selection">
+      <svg class="rabbit-option" id="whiteRabbit" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="60" rx="40" ry="30" fill="#FFFFFF"/>
+        <circle cx="80" cy="50" r="15" fill="#FFFFFF"/> 
+        <circle cx="85" cy="45" r="3" fill="#000"/> 
+        <ellipse cx="88" cy="55" rx="3" ry="2" fill="#FF69B4"/> 
+        <path d="M 65 30 Q 75 10 85 30" stroke="#000" fill="#FFFFFF"/> 
+        <path d="M 55 30 Q 65 10 75 30" stroke="#000" fill="#FFFFFF"/> 
+        <ellipse cx="20" cy="70" rx="10" ry="5" fill="#FFFFFF"/> 
+        <ellipse cx="40" cy="70" rx="10" ry="5" fill="#FFFFFF"/> 
+      </svg>
+      
+      <svg class="rabbit-option" id="brownRabbit" viewBox="0 0 100 100">
+        <ellipse cx="50" cy="60" rx="40" ry="30" fill="#8B4513"/>
+        <circle cx="80" cy="50" r="15" fill="#8B4513"/> 
+        <circle cx="85" cy="45" r="3" fill="#000"/> 
+        <ellipse cx="88" cy="55" rx="3" ry="2" fill="#FF69B4"/> 
+        <path d="M 65 30 Q 75 10 85 30" stroke="#000" fill="#8B4513"/> 
+        <path d="M 55 30 Q 65 10 75 30" stroke="#000" fill="#8B4513"/> 
+        <ellipse cx="20" cy="70" rx="10" ry="5" fill="#8B4513"/> 
+        <ellipse cx="40" cy="70" rx="10" ry="5" fill="#8B4513"/> 
+      </svg>
+    </div>
+    <button class="button start-game-btn" onclick="startGame()" disabled>Select a Rabbit to Start</button>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <div class="score">Carrots: <span id="score">0</span></div>
+  <div class="timer">Time: <span id="timer">60</span>s</div>
+  <div class="message" id="message"></div>
+  <button class="button pause-btn" onclick="togglePause()">Pause</button>
+  <button class="button continue-btn" onclick="continueGame()">Continue</button>
+  <button class="button replay-btn" onclick="resetGame()">Replay</button>
+  <button class="button back-menu-btn" onclick="backToMenu()">Back to Menu</button>
+
+  <svg class="rabbit" id="gameRabbit" viewBox="0 0 100 100"/>
+
+  <script>const rabbit = document.querySelector('.rabbit');
+const overlay = document.getElementById('overlay');
+const message = document.getElementById('message');
+const continueBtn = document.querySelector('.continue-btn');
+const startBtn = document.querySelector('.start-game-btn');
+let selectedRabbit = null;
+let score = 0;
+let timeLeft = 60;
+let gameInterval;
+let carrotSpawnInterval;
+let isGameActive = false;
+let isPaused = false;
+let timerPaused = false;
+let timerPauseTimeout;
+let carrotSpeed = 2000;
+let rabbitSize = 1;
+let pointMultiplier = 1;
+document.querySelectorAll('.rabbit-option').forEach(rabbitOption => {
+  rabbitOption.addEventListener('click', () => {
+    document.querySelectorAll('.rabbit-option').forEach(r => r.classList.remove('selected'));
+    rabbitOption.classList.add('selected');
+    selectedRabbit = rabbitOption.id;
+    startBtn.disabled = false;
+    startBtn.textContent = 'Start Game';
+  });
+});
+function startGame() {
+  if (!selectedRabbit) return;
+  const gameRabbit = document.getElementById('gameRabbit');
+  if (selectedRabbit === 'brownRabbit') {
+    gameRabbit.innerHTML = document.getElementById('brownRabbit').innerHTML;
+    pointMultiplier = 2;
+    timeLeft = 30;
+  } else {
+    gameRabbit.innerHTML = document.getElementById('whiteRabbit').innerHTML;
+    pointMultiplier = 1;
+    timeLeft = 60;
+  }
+  document.getElementById('timer').textContent = timeLeft;
+  document.getElementById('startScreen').style.display = 'none';
+  document.querySelector('.score').style.display = 'block';
+  document.querySelector('.timer').style.display = 'block';
+  document.querySelector('.pause-btn').style.display = 'block';
+  gameRabbit.style.display = 'block';
+  isGameActive = true;
+  document.getElementById('timer').textContent = timeLeft;
+  gameInterval = setInterval(updateTimer, 1000);
+  carrotSpawnInterval = setInterval(createCarrotGroup, carrotSpeed);
+}
+function togglePause() {
+  isPaused = true;
+  isGameActive = false;
+  clearInterval(gameInterval);
+  clearInterval(carrotSpawnInterval);
+  overlay.style.display = 'block';
+  message.style.display = 'block';
+  message.innerHTML = `Game Paused!<br>You have collected ${score} carrots!`;
+  continueBtn.style.display = 'block';
+  document.querySelector('.back-menu-btn').style.display = 'block';
+  document.querySelectorAll('.carrot').forEach(carrot => carrot.remove());
+}
+function continueGame() {
+  isPaused = false;
+  isGameActive = true;
+  overlay.style.display = 'none';
+  message.style.display = 'none';
+  continueBtn.style.display = 'none';
+  document.querySelector('.back-menu-btn').style.display = 'none';
+  gameInterval = setInterval(updateTimer, 1000);
+  carrotSpawnInterval = setInterval(createCarrotGroup, carrotSpeed);
+}
+function updateRabbitPosition(e) {
+  if (!isGameActive) return;
+  const x = e.clientX - rabbit.clientWidth / 2;
+  const y = e.clientY - rabbit.clientHeight / 2;
+  rabbit.style.transform = `translate(${x}px, ${y}px) scale(${rabbitSize}) scaleX(${e.clientX < rabbit.getBoundingClientRect().x ? -1 : 1})`;
+}
+function createCarrotGroup() {
+  if (!isGameActive) return;
+  const numCarrots = Math.floor(Math.random() * 4) + 3;
+  for (let i = 0; i < numCarrots; i++) {
+    setTimeout(() => {
+      const baseX = Math.random() * (window.innerWidth - 200) + 100;
+      const baseY = Math.random() * (window.innerHeight - 200) + 100;
+      createCarrot(baseX + Math.random() * 100 - 50, baseY + Math.random() * 100 - 50);
+    }, i * 100);
+  }
+}
+function createCarrot(x, y) {
+  if (!isGameActive) return;
+  const carrot = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  carrot.classList.add('carrot');
+  carrot.setAttribute('viewBox', '0 0 100 100');
+  const isIceCarrot = Math.random() < 0.05;
+  const isBomb = !isIceCarrot && Math.random() < 0.2;
+  const body = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  body.setAttribute('d', 'M50,90 L40,20 L60,20 Z');
+  body.setAttribute('fill', isIceCarrot ? '#87CEEB' : isBomb ? '#FF0000' : '#FFA500');
+  const top = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  top.setAttribute('d', 'M30,20 Q50,0 70,20');
+  top.setAttribute('stroke', isIceCarrot ? '#87CEEB' : '#228B22');
+  top.setAttribute('stroke-width', '5');
+  top.setAttribute('fill', 'none');
+  if (isIceCarrot) {
+    const crystals = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const crystal1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    crystal1.setAttribute('d', 'M45,50 L35,40 L45,30');
+    crystal1.setAttribute('stroke', '#FFFFFF');
+    crystal1.setAttribute('stroke-width', '2');
+    crystal1.setAttribute('fill', 'none');
+    const crystal2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    crystal2.setAttribute('d', 'M55,50 L65,40 L55,30');
+    crystal2.setAttribute('stroke', '#FFFFFF');
+    crystal2.setAttribute('stroke-width', '2');
+    crystal2.setAttribute('fill', 'none');
+    crystals.appendChild(crystal1);
+    crystals.appendChild(crystal2);
+    carrot.appendChild(crystals);
+  }
+  carrot.appendChild(body);
+  carrot.appendChild(top);
+  carrot.style.left = x + 'px';
+  carrot.style.top = y + 'px';
+  carrot.addEventListener('click', () => {
+    if (!isGameActive) return;
+    carrot.remove();
+    if (isBomb) {
+      score = 0;
+      rabbitSize = 1;
+      rabbit.style.transform = `translate(${x}px, ${y}px) scale(${rabbitSize})`;
+    } else if (isIceCarrot) {
+      clearTimeout(timerPauseTimeout);
+      timerPaused = true;
+      timerPauseTimeout = setTimeout(() => {
+        timerPaused = false;
+      }, 6000);
+      score += pointMultiplier;
+    } else {
+      score += pointMultiplier;
+      rabbitSize += 0.1;
+    }
+    document.getElementById('score').textContent = score;
+    carrotSpeed = Math.max(500, carrotSpeed - 50);
+    clearInterval(carrotSpawnInterval);
+    carrotSpawnInterval = setInterval(createCarrotGroup, carrotSpeed);
+  });
+  document.body.appendChild(carrot);
+  setTimeout(() => {
+    if (carrot.parentNode) {
+      carrot.style.opacity = '0';
+      setTimeout(() => carrot.remove(), 300);
+    }
+  }, 1500);
+}
+function updateTimer() {
+  if (!timerPaused) {
+    timeLeft--;
+    document.getElementById('timer').textContent = timeLeft;
+    if (timeLeft <= 0) {
+      endGame();
+    }
+  }
+}
+function endGame() {
+  isGameActive = false;
+  clearInterval(gameInterval);
+  clearInterval(carrotSpawnInterval);
+  rabbit.style.display = 'none';
+  overlay.style.display = 'block';
+  message.style.display = 'block';
+  message.innerHTML = `Game Over!<br>You caught ${score} carrots!`;
+  document.querySelector('.replay-btn').style.display = 'block';
+  document.querySelector('.back-menu-btn').style.display = 'block';
+  document.querySelectorAll('.carrot').forEach(carrot => carrot.remove());
+}
+function resetGame() {
+  window.location.reload();
+}
+function backToMenu() {
+  score = 0;
+  timeLeft = selectedRabbit === 'brownRabbit' ? 30 : 60;
+  rabbitSize = 1;
+  carrotSpeed = 2000;
+  isPaused = false;
+  isGameActive = false;
+  rabbit.style.display = 'none';
+  overlay.style.display = 'none';
+  message.style.display = 'none';
+  document.querySelector('.score').style.display = 'none';
+  document.querySelector('.timer').style.display = 'none';
+  document.querySelector('.pause-btn').style.display = 'none';
+  document.querySelector('.continue-btn').style.display = 'none';
+  document.querySelector('.replay-btn').style.display = 'none';
+  document.querySelector('.back-menu-btn').style.display = 'none';
+  selectedRabbit = null;
+  document.querySelectorAll('.rabbit-option').forEach(r => r.classList.remove('selected'));
+  startBtn.disabled = true;
+  startBtn.textContent = 'Select a Rabbit to Start';
+  document.getElementById('startScreen').style.display = 'flex';
+  document.querySelectorAll('.carrot').forEach(carrot => carrot.remove());
+  if (gameInterval) clearInterval(gameInterval);
+  if (carrotSpawnInterval) clearInterval(carrotSpawnInterval);
+}
+document.addEventListener('mousemove', updateRabbitPosition);</script>
+</body></html>
